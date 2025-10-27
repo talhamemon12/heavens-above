@@ -1,0 +1,61 @@
+name: Scheduled Tasks
+
+on:
+  schedule:
+    # Run every day at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Clean old artifacts
+      run: |
+        echo "🧹 Starting cleanup process..."
+        echo "Cleaning temporary files..."
+        find . -name "*.log" -type f -delete
+        find . -name "*.tmp" -type f -delete
+        echo "✅ Cleanup completed"
+        
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Create backup
+      run: |
+        echo "💾 Creating backup..."
+        DATE=$(date +%Y-%m-%d)
+        mkdir -p backups
+        tar -czf backups/backup-$DATE.tar.gz --exclude='backups' --exclude='.git' .
+        echo "✅ Backup created: backup-$DATE.tar.gz"
+        
+    - name: Upload backup
+      uses: actions/upload-artifact@v4
+      with:
+        name: daily-backup
+        path: backups/
+        retention-days: 30
+        
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run health checks
+      run: |
+        echo "🏥 Running health checks..."
+        echo "Checking repository size..."
+        du -sh .
+        echo "Checking file count..."
+        find . -type f | wc -l
+        echo "✅ Health check completed"
