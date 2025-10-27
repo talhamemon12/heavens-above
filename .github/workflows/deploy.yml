@@ -1,4 +1,4 @@
-name: Deployment Pipeline
+name: CD - Production Deployment
 
 on:
   push:

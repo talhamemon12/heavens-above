@@ -1,4 +1,4 @@
-name: Scheduled Tasks
+name: Maintenance - Automated Tasks
 
 on:
   schedule:

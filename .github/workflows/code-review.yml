@@ -1,4 +1,4 @@
-name: Code Review
+name: Quality - Code Review & Analysis
 
 on:
   pull_request:

@@ -1,4 +1,4 @@
-name: Custom Workflow - Release & Metrics
+name: Analytics - Release & Metrics Tracking
 
 on:
   push:
