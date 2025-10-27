@@ -4,65 +4,12 @@ on:
   push:
     branches: [ main, master ]
     paths:
-      - 'docs/**'
       - 'README.md'
       - '*.md'
   workflow_dispatch:
 
 jobs:
-  build-docs:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    - name: Create docs directory
-      run: |
-        echo "📚 Building documentation..."
-        mkdir -p docs-build
-        
-    - name: Generate documentation
-      run: |
-        # Copy markdown files
-        cp README.md docs-build/index.md || touch docs-build/index.md
-        cp -r docs/* docs-build/ 2>/dev/null || echo "No docs directory found"
-        
-        # Create a simple index.html
-        cat > docs-build/index.html << 'EOF'
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Project Documentation</title>
-            <style>
-                body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-                h1 { color: #333; }
-                pre { background: #f4f4f4; padding: 15px; border-radius: 5px; }
-            </style>
-        </head>
-        <body>
-            <h1>Project Documentation</h1>
-            <p>Documentation has been successfully deployed!</p>
-            <p>Last updated: $(date)</p>
-        </body>
-        </html>
-        EOF
-        
-    - name: Upload documentation artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: documentation
-        path: docs-build/
-        
   deploy-docs:
-    needs: build-docs
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -71,20 +18,46 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Download documentation
-      uses: actions/download-artifact@v4
-      with:
-        name: documentation
-        path: docs-build/
+    - name: Build documentation
+      run: |
+        echo "📚 Building docs..."
+        mkdir -p docs-site
+        
+        # Create simple docs page
+        cat > docs-site/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Heavens Above - Documentation</title>
+            <style>
+                body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; line-height: 1.6; }
+                h1 { color: #2c3e50; }
+                code { background: #f4f4f4; padding: 3px 6px; border-radius: 3px; }
+                pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+            </style>
+        </head>
+        <body>
+            <h1>📡 Heavens Above Documentation</h1>
+            <p>Scripts for scraping the Heavens Above website.</p>
+            <h2>Installation</h2>
+            <pre>npm install</pre>
+            <h2>Usage</h2>
+            <pre>node run.js</pre>
+            <p><small>Last updated: $(date)</small></p>
+        </body>
+        </html>
+        EOF
+        
+        # Copy README
+        cp README.md docs-site/ 2>/dev/null || echo "No README found"
+        
+        echo "✅ Docs built!"
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs-build
-        publish_branch: gh-pages
-        
-    - name: Deployment summary
-      run: |
-        echo "✅ Documentation deployed successfully!"
-        echo "📖 View at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        publish_dir: ./docs-site
+        publish_branch: gh-pages-docs

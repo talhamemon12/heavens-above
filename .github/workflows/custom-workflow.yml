@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  generate-release-notes:
+  release-notes:
     runs-on: ubuntu-latest
     
     steps:
@@ -20,29 +20,23 @@ jobs:
       run: |
         echo "📝 Generating release notes..."
         
-        # Get the latest tag
-        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
         PREVIOUS_TAG=$(git describe --tags --abbrev=0 $LATEST_TAG^ 2>/dev/null || echo "")
         
-        echo "## Release Notes for $LATEST_TAG" > RELEASE_NOTES.md
+        echo "## 🚀 Release $LATEST_TAG" > RELEASE_NOTES.md
         echo "" >> RELEASE_NOTES.md
-        echo "**Release Date:** $(date '+%Y-%m-%d')" >> RELEASE_NOTES.md
+        echo "**Date:** $(date '+%Y-%m-%d')" >> RELEASE_NOTES.md
         echo "" >> RELEASE_NOTES.md
         
         if [ -n "$PREVIOUS_TAG" ]; then
-          echo "### Changes since $PREVIOUS_TAG" >> RELEASE_NOTES.md
-          echo "" >> RELEASE_NOTES.md
+          echo "### Changes since $PREVIOUS_TAG:" >> RELEASE_NOTES.md
           git log $PREVIOUS_TAG..$LATEST_TAG --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
         else
           echo "### Initial Release" >> RELEASE_NOTES.md
-          echo "" >> RELEASE_NOTES.md
-          git log --pretty=format:"- %s (%h)" >> RELEASE_NOTES.md
+          git log --pretty=format:"- %s (%h)" | head -10 >> RELEASE_NOTES.md
         fi
         
         echo "" >> RELEASE_NOTES.md
-        echo "---" >> RELEASE_NOTES.md
-        echo "Generated automatically by GitHub Actions" >> RELEASE_NOTES.md
-        
         cat RELEASE_NOTES.md
         
     - name: Upload release notes
@@ -51,55 +45,37 @@ jobs:
         name: release-notes
         path: RELEASE_NOTES.md
         
-  analyze-performance:
+  metrics:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
     - name: Collect project metrics
       run: |
-        echo "📊 Collecting project metrics..."
+        echo "📊 Collecting metrics..."
         
-        echo "## Project Metrics Report" > METRICS.md
+        echo "## Project Metrics" > METRICS.md
         echo "" >> METRICS.md
         echo "**Generated:** $(date)" >> METRICS.md
         echo "" >> METRICS.md
         
-        echo "### Repository Statistics" >> METRICS.md
-        echo "- **Total Commits:** $(git rev-list --count HEAD)" >> METRICS.md
-        echo "- **Total Contributors:** $(git log --format='%aN' | sort -u | wc -l)" >> METRICS.md
-        echo "- **Total Files:** $(find . -type f -not -path '*/\.git/*' | wc -l)" >> METRICS.md
-        echo "- **Lines of Code:** $(find . -name '*.js' -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' | xargs wc -l 2>/dev/null | tail -1 || echo 'N/A')" >> METRICS.md
+        echo "### Repository Stats" >> METRICS.md
+        echo "- **Commits:** $(git rev-list --count HEAD)" >> METRICS.md
+        echo "- **Contributors:** $(git log --format='%aN' | sort -u | wc -l)" >> METRICS.md
+        echo "- **Files:** $(find . -type f -not -path '*/\.git/*' -not -path '*/node_modules/*' | wc -l)" >> METRICS.md
+        echo "- **JavaScript Files:** $(find . -name '*.js' -not -path '*/node_modules/*' | wc -l)" >> METRICS.md
         echo "" >> METRICS.md
         
         echo "### Recent Activity" >> METRICS.md
-        echo "- **Last Commit:** $(git log -1 --format='%ar by %an')" >> METRICS.md
+        echo "- **Last Commit:** $(git log -1 --format='%ar')" >> METRICS.md
         echo "- **Branch:** $(git branch --show-current)" >> METRICS.md
-        echo "" >> METRICS.md
         
         cat METRICS.md
         
-    - name: Upload metrics report
+    - name: Upload metrics
       uses: actions/upload-artifact@v4
       with:
         name: project-metrics
         path: METRICS.md
-        
-  notify-completion:
-    needs: [generate-release-notes, analyze-performance]
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Send completion notification
-      run: |
-        echo "✅ Custom workflow completed successfully!"
-        echo "📦 Release notes generated"
-        echo "📊 Metrics collected"
-        echo "🎉 All tasks finished"

@@ -2,12 +2,11 @@ name: Dependency Updates
 
 on:
   schedule:
-    # Run every Monday at 9 AM UTC
-    - cron: '0 9 * * 1'
+    - cron: '0 9 * * 1'  # Every Monday at 9 AM
   workflow_dispatch:
 
 jobs:
-  update-dependencies:
+  update:
     runs-on: ubuntu-latest
     
     steps:
@@ -21,20 +20,12 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Check for outdated packages
-      run: |
-        echo "📦 Checking for outdated packages..."
-        npm outdated || true
+    - name: Check outdated packages
+      run: npm outdated || true
         
     - name: Update dependencies
-      run: |
-        echo "⬆️ Updating dependencies..."
-        npm update
+      run: npm update
         
-    - name: Run tests
-      run: npm test --if-present
-      continue-on-error: true
-      
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v6
       with:
@@ -42,15 +33,11 @@ jobs:
         commit-message: 'chore: update dependencies'
         title: 'Automated Dependency Updates'
         body: |
-          ## Dependency Updates
+          ## 📦 Dependency Updates
           
-          This PR contains automated dependency updates.
+          Automated update of npm packages.
           
-          Please review the changes and run tests before merging.
-          
-          - Updated npm packages to latest compatible versions
-          - Tests have been run automatically
+          Please review and test before merging.
           
         branch: dependency-updates
         delete-branch: true
-        labels: dependencies, automated
