@@ -12,16 +12,22 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Deploy to Heroku
-      uses: akhileshns/heroku-deploy@v3.13.15
       with:
-        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-        heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-        heroku_email: ${{ secrets.HEROKU_EMAIL }}
-        usedocker: false
+        fetch-depth: 0
+      
+    - name: Install Heroku CLI
+      run: |
+        curl https://cli-assets.heroku.com/install.sh | sh
+        
+    - name: Deploy to Heroku
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: |
+        git remote add heroku https://heroku:$HEROKU_API_KEY@git.heroku.com/${{ secrets.HEROKU_APP_NAME }}.git
+        git push heroku main:master -f
         
     - name: Deployment Success
       run: |
         echo "🚀 Deployment successful!"
         echo "🌐 Your app is live at: https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com"
+        echo "Visit your app now!"
