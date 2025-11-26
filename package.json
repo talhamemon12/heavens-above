@@ -1,38 +1,20 @@
+
 {
   "name": "heavens-above",
   "version": "1.0.0",
-  "private": true,
-  "description": "Astronomy data scraper and web viewer - Deployed via GitHub Actions",
+  "description": "Astronomy data viewer - Deployed via GitHub Actions",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "scrape": "node run.js"
+    "start": "node server.js"
   },
-  "dependencies": {
-    "cheerio": "^1.0.0-rc.3",
-    "request": "^2.88.2",
-    "express": "^4.18.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/talhamemon12/heavens-above.git"
+  "engines": {
+    "node": "18.x"
   },
   "keywords": [
-    "Heavens Above",
-    "spider",
     "astronomy",
-    "scraper",
     "heroku",
     "github-actions"
   ],
   "author": "Muhammad Talha Memon",
-  "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/talhamemon12/heavens-above/issues"
-  },
-  "homepage": "https://github.com/talhamemon12/heavens-above#readme",
-  "engines": {
-    "node": "18.x",
-    "npm": "9.x"
-  }
+  "license": "MIT"
 }
